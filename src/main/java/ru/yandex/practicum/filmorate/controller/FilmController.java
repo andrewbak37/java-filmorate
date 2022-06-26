@@ -5,6 +5,7 @@ import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.Film;
 
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -27,9 +28,9 @@ public class FilmController {
     }
 
     @GetMapping("/films")
-    public Map<Long, Film> findAll() {
+    public Collection<Film> findAll() {
         log.debug("Колличество фильмов: {}", films.size());
-        return films;
+        return films.values();
     }
 
     @PutMapping("/film")
