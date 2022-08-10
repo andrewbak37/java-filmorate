@@ -1,8 +1,6 @@
 package ru.yandex.practicum.filmorate.model;
 
-import lombok.Data;
-
-@Data
-public class ObjectModel{
+public class FriendshipStatus {
     private Integer id;
+    private String name;
 }
