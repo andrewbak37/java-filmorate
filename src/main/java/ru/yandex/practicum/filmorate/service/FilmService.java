@@ -1,59 +1,70 @@
 package ru.yandex.practicum.filmorate.service;
 
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.model.Film;
-import ru.yandex.practicum.filmorate.storage.InMemoryFilmStorage;
+import ru.yandex.practicum.filmorate.model.Genre;
+import ru.yandex.practicum.filmorate.model.MPA;
+import ru.yandex.practicum.filmorate.storage.FilmStorage;
+import ru.yandex.practicum.filmorate.storage.GenreStorage;
+import ru.yandex.practicum.filmorate.storage.LikeStorage;
+import ru.yandex.practicum.filmorate.storage.MpaStorage;
 
 import java.util.Collection;
-import java.util.Comparator;
-import java.util.stream.Collectors;
+import java.util.List;
 
 
 @Service
 public class FilmService {
+    private final FilmStorage filmStorage;
+    private final LikeStorage likeStorage;
+    private final GenreStorage genreStorage;
+    private final MpaStorage mpaStorage;
 
-    final private InMemoryFilmStorage inMemoryFilmStorage;
+    @Autowired
+    public FilmService(@Qualifier("filmDbStorage") FilmStorage storage,
+                       @Qualifier("likeDbStorage") LikeStorage likeStorage,
+                       @Qualifier("genreDbStorage") GenreStorage genreStorage,
+                       @Qualifier("mpaDbStorage") MpaStorage mpaStorage) {
 
-    public FilmService(InMemoryFilmStorage inMemoryFilmStorage) {
-        this.inMemoryFilmStorage = inMemoryFilmStorage;
+        this.filmStorage = storage;
+        this.likeStorage = likeStorage;
+        this.genreStorage = genreStorage;
+        this.mpaStorage = mpaStorage;
     }
 
-    public Film addLike(int filmId, int userId) {
-        inMemoryFilmStorage.getMapFilm().get(filmId).getUserLikes().add(userId);
-        return inMemoryFilmStorage.getMapFilm().get(filmId);
+    public void addLike(int filmId, int userId) {
+        likeStorage.addLike(filmId, userId);
     }
 
-    public Film deleteLike(int filmId, int userId) {
+    public void deleteLike(int filmId, int userId) {
         checkUnknownFilm(userId);
-        inMemoryFilmStorage.getMapFilm().get(filmId).getUserLikes().remove(userId);
-        return inMemoryFilmStorage.getMapFilm().get(filmId);
+        likeStorage.deleteLike(filmId, userId);
     }
 
-    public Film create (Film film) {
-        return inMemoryFilmStorage.create(film);
+    public Film create(Film film) {
+        return filmStorage.createFilm(film);
     }
 
     public Collection<Film> findAll() {
-        return inMemoryFilmStorage.findAll();
+        return filmStorage.getAllFilms();
     }
 
     public Film update(Film film) {
         checkUnknownFilm(film.getId());
-        return inMemoryFilmStorage.update(film);
+        return filmStorage.update(film);
     }
 
     public Film getFilmById(int id) {
         checkUnknownFilm(id);
-        return inMemoryFilmStorage.getMapFilm().get(id);
+        return filmStorage.getById(id);
     }
 
     public Collection<Film> popularFilm(int count) {
-        return inMemoryFilmStorage.getMapFilm().values().stream()
-                .sorted(Comparator.comparing(e-> -e.getUserLikes().size()))
-                .limit(count)
-                .collect(Collectors.toList());
+        return likeStorage.getPopularFilms(count);
     }
 
     public void checkUnknownFilm(int idFilm) {
@@ -61,6 +72,23 @@ public class FilmService {
             throw new NotFoundException(HttpStatus.NOT_FOUND);
         }
     }
+
+    public List<Genre> getGenres() {
+        return genreStorage.getGenres();
+    }
+
+    public Genre getGenreById(int id) {
+        return genreStorage.getGenreById(id);
+    }
+
+    public List<MPA> getMPA() {
+        return mpaStorage.getMPA();
+    }
+
+    public MPA getMpaById(int id) {
+        return mpaStorage.getMpaById(id);
+    }
+
 }
 
 

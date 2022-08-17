@@ -1,14 +1,21 @@
 package ru.yandex.practicum.filmorate.model;
 
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
+import org.springframework.stereotype.Component;
 
 import javax.validation.constraints.Email;
 import javax.validation.constraints.NotBlank;
 import java.time.LocalDate;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.*;
 
 @Data
+@Component
+@Builder
+@AllArgsConstructor
+@NoArgsConstructor
 public class User {
     private Integer id;
     @NotBlank
@@ -19,6 +26,6 @@ public class User {
     @NotBlank
     private String email;
     private LocalDate birthday;
-    private Set<Integer> friends = new HashSet<>();
-    private FriendshipStatus friendshipStatus;
+    private List<Integer> friends = new ArrayList<>();
+
 }

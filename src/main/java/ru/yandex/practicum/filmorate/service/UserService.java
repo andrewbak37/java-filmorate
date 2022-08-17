@@ -1,84 +1,88 @@
 package ru.yandex.practicum.filmorate.service;
 
+import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.model.User;
-import ru.yandex.practicum.filmorate.storage.InMemoryUserStorage;
+import ru.yandex.practicum.filmorate.storage.FriendshipStorage;
+import ru.yandex.practicum.filmorate.storage.UserStorage;
 
 import java.util.*;
-import java.util.stream.Collectors;
 
 @Service
 @Slf4j
+@Data
+
 public class UserService {
+    private final UserStorage userStorage;
+    private final FriendshipStorage friendshipStorage;
 
-    private final InMemoryUserStorage inMemoryUserStorage;
+    @Autowired
+    public UserService(@Qualifier("userDbStorage") UserStorage userStorage,
+                       @Qualifier("friendshipDbStorage") FriendshipStorage friendshipStorage) {
 
-    public UserService(InMemoryUserStorage inMemoryUserStorage) {
-        this.inMemoryUserStorage = inMemoryUserStorage;
+        this.userStorage = userStorage;
+        this.friendshipStorage = friendshipStorage;
+
     }
 
     public void addFriends(int id, int friendId) {
         checkUnknownUser(friendId);
-        User user = inMemoryUserStorage.getUserById(id);
-        User friend = inMemoryUserStorage.getUserById(friendId);
-        inMemoryUserStorage.addFriends(user, friend);
+        friendshipStorage.addFriend(id, friendId);
     }
 
     public void deleteFriends(int id, int friendId) {
-        User user = inMemoryUserStorage.getUserById(id);
-        User friend = inMemoryUserStorage.getUserById(friendId);
-        inMemoryUserStorage.deleteFriends(user, friend);
+        friendshipStorage.deleteFriend(id, friendId);
     }
 
     public List<User> getAllCommonFriends(int id, int secondId) {
-        Set<Integer> user = inMemoryUserStorage.getUserById(id).getFriends();
-        Set<Integer> userSecond = inMemoryUserStorage.getUserById(secondId).getFriends();
-
-        List<Integer> friends = user.stream().distinct().filter(userSecond :: contains).collect(Collectors.toList());
-        List<User> commonFriends = new ArrayList<>();
-        for (Integer i : friends) {
-            commonFriends.add(inMemoryUserStorage.getUserById(i));
-        }
-        return commonFriends;
-    }
-
-    public Set<User> getAllFriends(int id) {
-        Set<Integer> friends = inMemoryUserStorage.getMapUser().get(id).getFriends();
-        Set<User> userSet = new HashSet<>();
-        friends.forEach(friend -> userSet.add(inMemoryUserStorage.getMapUser().get(friend)));
-        return userSet;
+        return friendshipStorage.getAllCommonFriends(id, secondId);
 
     }
 
-    public User get(int userId) {
-        User user = inMemoryUserStorage.getUserById(userId);
+    public List<User> getAllFriends(int id) {
+        return friendshipStorage.getAllFriends(id);
+    }
+
+    public void confirmFriend(int id, int notConfirmFriendId) {
+        friendshipStorage.confirmFriend(id, notConfirmFriendId);
+    }
+
+    public User getUserById(int userId) {
+        User user = userStorage.getUserById(userId);
         if (user == null) {
-            log.info("Нет");
+            log.info("Такого юзера нет");
             throw new NotFoundException(HttpStatus.NOT_FOUND);
         } else return user;
     }
 
-    public User create(User user) {
-        return inMemoryUserStorage.create(user);
+    public User createUser(User user) {
+        return userStorage.createUser(user);
+
     }
 
-    public Collection<User> findAll() {
-        return inMemoryUserStorage.findAll();
+    public Collection<User> getAllUser() {
+        return userStorage.getAllUsers();
     }
 
-    public User update(User user) {
+    public User updateUser(User user) {
         if (user.getId() < 0) {
             throw new NotFoundException(HttpStatus.INTERNAL_SERVER_ERROR);
         }
-        return inMemoryUserStorage.update(user);
+        return userStorage.updateUser(user);
     }
 
     public void checkUnknownUser(int idUser) {
         if (idUser < 0) {
             throw new NotFoundException(HttpStatus.NOT_FOUND);
         }
+    }
+
+    public void deleteUser(int id) {
+        userStorage.deleteUser(id);
     }
 }
