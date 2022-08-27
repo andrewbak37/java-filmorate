@@ -2,6 +2,7 @@ package ru.yandex.practicum.filmorate.dao;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
+import org.springframework.jdbc.core.BeanPropertyRowMapper;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.support.rowset.SqlRowSet;
 import org.springframework.stereotype.Component;
@@ -47,5 +48,11 @@ public class GenreDbStorage implements GenreStorage {
             genre.setName(filmRowsGenres.getString("GENRE_NAME"));
         }
         return genre;
+    }
+
+    public List<Genre> getGenresByFilmId(int id) {
+        String sql = "SELECT * FROM GENRES WHERE GENRE_ID IN " +
+                "(SELECT GENRE_ID FROM FILM_GENRES WHERE FILM_ID = ?)";
+        return jdbcTemplate.query(sql, new BeanPropertyRowMapper<>(Genre.class), id);
     }
 }

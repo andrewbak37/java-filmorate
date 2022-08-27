@@ -1,9 +1,13 @@
 package ru.yandex.practicum.filmorate.dao;
 
 import lombok.Data;
+import lombok.RequiredArgsConstructor;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.support.rowset.SqlRowSet;
 import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Repository;
+import ru.yandex.practicum.filmorate.exception.NotFoundException;
+import ru.yandex.practicum.filmorate.mapper.FilmRowMapper;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.Genre;
 import ru.yandex.practicum.filmorate.model.MPA;
@@ -13,33 +17,10 @@ import java.util.*;
 
 @Data
 @Component
+
 public class LikeDbStorage implements LikeStorage {
 
     private final JdbcTemplate jdbcTemplate;
-
-    @Override
-    public Collection<Film> getPopularFilms(int count) {
-        SqlRowSet filmRowsFilms = jdbcTemplate.queryForRowSet("SELECT * FROM FILMS ORDER BY RATE DESC LIMIT ?"
-                , count);
-        List<Film> films = new ArrayList<>();
-
-        while (filmRowsFilms.next()) {
-            Film film = new Film();
-            int filmId = filmRowsFilms.getInt("FILM_ID");
-
-            SqlRowSet filmRowsMpa = jdbcTemplate.queryForRowSet("SELECT * FROM FILM_MPA WHERE FILM_ID = ?", filmId);
-
-            SqlRowSet filmRowsGenre = jdbcTemplate.queryForRowSet("SELECT * FROM FILM_GENRES " +
-                    "WHERE FILM_ID = ?", filmId);
-
-            SqlRowSet filmRowsLiked = jdbcTemplate.queryForRowSet("SELECT * FROM FILM_LIKES WHERE FILM_ID = ?"
-                    , filmId);
-
-            makeRequestGetFilm(film, filmRowsFilms, filmRowsMpa, filmRowsLiked, filmRowsGenre);
-            films.add(film);
-        }
-        return films;
-    }
 
     @Override
     public void addLike(int filmId, int userId) {
@@ -141,5 +122,11 @@ public class LikeDbStorage implements LikeStorage {
         if (filmRowsMpaId.next()) {
             film.getMpa().setName(filmRowsMpaId.getString("MPA_NAME"));
         }
+    }
+
+    public Integer getLikesCount(int id) throws NotFoundException {
+        String sql = "SELECT COUNT(*) FROM FILM_LIKES WHERE FILM_ID = ?";
+        Integer likes = jdbcTemplate.queryForObject(sql, Integer.class, id);
+        return likes;
     }
 }

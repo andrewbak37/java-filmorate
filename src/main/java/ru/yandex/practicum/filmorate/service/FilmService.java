@@ -12,6 +12,7 @@ import ru.yandex.practicum.filmorate.storage.FilmStorage;
 import ru.yandex.practicum.filmorate.storage.GenreStorage;
 import ru.yandex.practicum.filmorate.storage.LikeStorage;
 import ru.yandex.practicum.filmorate.storage.MpaStorage;
+import ru.yandex.practicum.filmorate.validation.FilmValidation;
 
 import java.util.Collection;
 import java.util.List;
@@ -23,17 +24,20 @@ public class FilmService {
     private final LikeStorage likeStorage;
     private final GenreStorage genreStorage;
     private final MpaStorage mpaStorage;
+    private final FilmValidation filmValidation;
 
     @Autowired
     public FilmService(@Qualifier("filmDbStorage") FilmStorage storage,
                        @Qualifier("likeDbStorage") LikeStorage likeStorage,
                        @Qualifier("genreDbStorage") GenreStorage genreStorage,
-                       @Qualifier("mpaDbStorage") MpaStorage mpaStorage) {
+                       @Qualifier("mpaDbStorage") MpaStorage mpaStorage,
+                       FilmValidation filmValidation) {
 
         this.filmStorage = storage;
         this.likeStorage = likeStorage;
         this.genreStorage = genreStorage;
         this.mpaStorage = mpaStorage;
+        this.filmValidation = filmValidation;
     }
 
     public void addLike(int filmId, int userId) {
@@ -46,6 +50,7 @@ public class FilmService {
     }
 
     public Film create(Film film) {
+        filmValidation.filmsValidation(film);
         return filmStorage.createFilm(film);
     }
 
@@ -55,6 +60,7 @@ public class FilmService {
 
     public Film update(Film film) {
         checkUnknownFilm(film.getId());
+        filmValidation.filmsValidation(film);
         return filmStorage.update(film);
     }
 
@@ -64,7 +70,7 @@ public class FilmService {
     }
 
     public Collection<Film> popularFilm(int count) {
-        return likeStorage.getPopularFilms(count);
+        return filmStorage.getPopularFilms(count);
     }
 
     public void checkUnknownFilm(int idFilm) {
