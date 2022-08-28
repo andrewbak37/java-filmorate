@@ -1,33 +1,95 @@
 package ru.yandex.practicum.filmorate.controller;
 
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.filmorate.model.Film;
-import ru.yandex.practicum.filmorate.validation.FilmValidation;
+import ru.yandex.practicum.filmorate.model.Genre;
+import ru.yandex.practicum.filmorate.model.MPA;
+import ru.yandex.practicum.filmorate.service.FilmService;
 
 import javax.validation.Valid;
 import java.util.Collection;
+import java.util.List;
 
 @RestController
-public class FilmController extends AbstractController<Film> {
-    FilmValidation filmValidation = new FilmValidation();
+@Slf4j
+public class FilmController {
 
-    @Override
-    @PostMapping(value = "/films")
-    public Film create(@Valid @RequestBody Film model) {
-        filmValidation.filmsValidation(model);
-        return super.create(model);
+    private final FilmService service;
+
+    @Autowired
+    public FilmController(FilmService service) {
+        this.service = service;
     }
 
-    @Override
+    @PostMapping(value = "/films")
+    public Film create(@Valid @RequestBody Film film) {
+        return service.create(film);
+    }
+
     @GetMapping(value = "/films")
     public Collection<Film> findAll() {
-        return super.findAll();
+        return service.findAll();
     }
 
-    @Override
     @PutMapping(value = "/films")
-    public Film update(@Valid @RequestBody Film model) {
-        filmValidation.filmsValidation(model);
-        return super.update(model);
+    public Film update(@Valid @RequestBody Film film) {
+        return service.update(film);
     }
+
+    @PutMapping(value = "/films/{id}/like/{userId}")
+    public void addLike(@PathVariable("id") int id,
+                        @PathVariable("userId") int userId) {
+        service.addLike(id, userId);
+    }
+
+    @DeleteMapping(value = "/films/{id}/like/{userId}")
+    public void deleteLike(@PathVariable("id") int id,
+                           @PathVariable("userId") int userId) {
+        service.deleteLike(id, userId);
+    }
+
+    @GetMapping("/films/popular")
+    @ResponseBody
+    public Collection<Film> getPopularFilms(@RequestParam(required = false) String count) {
+        if (count == null) {
+            return service.popularFilm(10);
+        }
+        if (Integer.parseInt(count) <= 0) {
+            throw new RuntimeException("Incorrect count");
+        }
+        return service.popularFilm(Integer.parseInt(count));
+    }
+
+    @GetMapping(value = "/films/{id}")
+    public Film getFilm(@PathVariable("id") int id) {
+        return service.getFilmById(id);
+    }
+
+    @GetMapping(value = "/genres")
+    @ResponseBody
+    public List<Genre> getGenres() {
+        return service.getGenres();
+    }
+
+    @GetMapping(value = "/genres/{id}")
+    @ResponseBody
+    public Genre getGenre(@PathVariable int id) {
+        return service.getGenreById(id);
+    }
+
+    @GetMapping(value = "/mpa")
+    @ResponseBody
+    public List<MPA> getRates() {
+        return service.getMPA();
+    }
+
+    @GetMapping(value = "/mpa/{id}")
+    @ResponseBody
+    public MPA getRate(@PathVariable int id) {
+        return service.getMpaById(id);
+    }
+
 }
+

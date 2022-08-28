@@ -1,13 +1,16 @@
 package ru.yandex.practicum.filmorate.validation;
 
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.stereotype.Component;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.User;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 
 @Slf4j
+@Component
 public class UserValidation extends User {
     public LocalDateTime localDateTime = LocalDateTime.now();
 
