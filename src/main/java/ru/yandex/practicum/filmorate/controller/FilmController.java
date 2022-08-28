@@ -16,7 +16,7 @@ import java.util.List;
 @Slf4j
 public class FilmController {
 
-     private final FilmService service;
+    private final FilmService service;
 
     @Autowired
     public FilmController(FilmService service) {
@@ -50,13 +50,6 @@ public class FilmController {
         service.deleteLike(id, userId);
     }
 
-//    @GetMapping(value = "/films/popular")
-//    @ResponseBody
-//    public Collection<Film> getPopularFilm(@RequestParam(defaultValue = "10") int count) {
-//        return service.popularFilm(count);
-//    }
-
-
     @GetMapping("/films/popular")
     @ResponseBody
     public Collection<Film> getPopularFilms(@RequestParam(required = false) String count) {
@@ -68,8 +61,6 @@ public class FilmController {
         }
         return service.popularFilm(Integer.parseInt(count));
     }
-
-
 
     @GetMapping(value = "/films/{id}")
     public Film getFilm(@PathVariable("id") int id) {

@@ -2,23 +2,26 @@ package ru.yandex.practicum.filmorate.dao;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
-import org.springframework.jdbc.core.BeanPropertyRowMapper;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.support.rowset.SqlRowSet;
 import org.springframework.stereotype.Component;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
+import ru.yandex.practicum.filmorate.mapper.GenreRowMapper;
 import ru.yandex.practicum.filmorate.model.Genre;
 import ru.yandex.practicum.filmorate.storage.GenreStorage;
 
 import java.util.ArrayList;
 import java.util.List;
+
 @Component
 public class GenreDbStorage implements GenreStorage {
+    private final GenreRowMapper genreRowMapper;
     private final JdbcTemplate jdbcTemplate;
 
     @Autowired
-    public GenreDbStorage(JdbcTemplate jdbcTemplate) {
+    public GenreDbStorage(JdbcTemplate jdbcTemplate, GenreRowMapper genreRowMapper) {
         this.jdbcTemplate = jdbcTemplate;
+        this.genreRowMapper = genreRowMapper;
     }
 
     @Override
@@ -53,6 +56,6 @@ public class GenreDbStorage implements GenreStorage {
     public List<Genre> getGenresByFilmId(int id) {
         String sql = "SELECT * FROM GENRES WHERE GENRE_ID IN " +
                 "(SELECT GENRE_ID FROM FILM_GENRES WHERE FILM_ID = ?)";
-        return jdbcTemplate.query(sql, new BeanPropertyRowMapper<>(Genre.class), id);
+        return jdbcTemplate.query(sql, genreRowMapper, id);
     }
 }

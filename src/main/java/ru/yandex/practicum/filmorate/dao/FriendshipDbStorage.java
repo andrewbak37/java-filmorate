@@ -60,7 +60,6 @@ public class FriendshipDbStorage implements FriendshipStorage {
         return commonFriends;
     }
 
-
     @Override
     public List<User> getAllFriends(int id) {
         SqlRowSet rowSetGet = jdbcTemplate.queryForRowSet("SELECT * FROM USER_FRIENDS WHERE USER_ID = ? " +

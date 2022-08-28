@@ -1,13 +1,10 @@
 package ru.yandex.practicum.filmorate.dao;
 
 import lombok.Data;
-import lombok.RequiredArgsConstructor;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.support.rowset.SqlRowSet;
 import org.springframework.stereotype.Component;
-import org.springframework.stereotype.Repository;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
-import ru.yandex.practicum.filmorate.mapper.FilmRowMapper;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.Genre;
 import ru.yandex.practicum.filmorate.model.MPA;
@@ -34,19 +31,16 @@ public class LikeDbStorage implements LikeStorage {
         if (f) {
             return;
         }
-
         int temp = getRate(userId, filmId) + 1;
         String sqlQueryFilmsLike = "INSERT INTO FILM_LIKES(FILM_ID, USER_ID) VALUES (?, ?)";
         String sqlQueryFilmsCountLike = "UPDATE FILMS SET RATE = ? WHERE FILM_ID = ?";
         jdbcTemplate.update(sqlQueryFilmsCountLike, temp, filmId);
         jdbcTemplate.update(sqlQueryFilmsLike, filmId, userId);
-
     }
 
     @Override
     public void deleteLike(int filmId, int userId) {
         int temp = getRate(userId, filmId) - 1;
-
         String deleteAllLikeFilm = "DELETE FROM FILM_LIKES WHERE FILM_ID = ? AND USER_ID = ?";
         String sqlQueryFilmsCountLike = "UPDATE FILMS SET RATE = ? WHERE FILM_ID = ?";
 
@@ -110,7 +104,7 @@ public class LikeDbStorage implements LikeStorage {
             SqlRowSet filmRowsGenres = jdbcTemplate.queryForRowSet("SELECT * FROM GENRES WHERE GENRE_ID = ?",
                     film.getGenres().get(i).getId());
 
-            if (filmRowsGenres.next()) { // TODO: 17.08.2022
+            if (filmRowsGenres.next()) {
                 film.getGenres().get(i).setName(filmRowsGenres.getString("GENRE_NAME"));
             }
         }

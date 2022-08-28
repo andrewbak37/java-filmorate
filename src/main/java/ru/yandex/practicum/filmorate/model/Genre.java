@@ -4,10 +4,9 @@ import lombok.*;
 
 @Getter
 @Setter
-//@AllArgsConstructor
-//@NoArgsConstructor
+@AllArgsConstructor
 @RequiredArgsConstructor
-@EqualsAndHashCode(of = "id") // Объект определяется только по полю id
+@EqualsAndHashCode(of = "id")
 @ToString
 public class Genre {
     private Integer id;
